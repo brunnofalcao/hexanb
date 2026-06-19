@@ -63,12 +63,11 @@
 
   /* MODO PRINT: tela cheia, só a arte */
   body.printmode .panel,body.printmode .preview-label,body.printmode .preview-wrap{display:none;}
-  body.printmode{padding:0;background:#000;}
+  body.printmode{padding:0;background:#000;overflow:hidden;}
   #printstage{display:none;}
-  body.printmode #printstage{display:flex;position:fixed;inset:0;z-index:999;background:#000;align-items:center;justify-content:center;flex-direction:column;}
-  #printstage .pscaler{overflow:hidden;border-radius:0;}
-  #printstage .closehint{position:fixed;top:env(safe-area-inset-top,16px);left:0;right:0;text-align:center;color:#9a86bd;font-size:13px;padding:12px;z-index:1000;}
-  #printstage .closebtn{position:fixed;bottom:env(safe-area-inset-bottom,20px);left:50%;transform:translateX(-50%);background:#6f4d89;color:#fff;border:none;border-radius:100px;padding:14px 30px;font-size:15px;font-weight:700;z-index:1000;}
+  body.printmode #printstage{display:block;position:fixed;inset:0;z-index:999;background:#000;}
+  #printstage .pscaler{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);overflow:hidden;}
+  #printstage .closebtn{position:fixed;bottom:env(safe-area-inset-bottom,24px);left:50%;transform:translateX(-50%);background:rgba(111,77,137,.92);backdrop-filter:blur(6px);color:#fff;border:none;border-radius:100px;padding:13px 26px;font-size:14px;font-weight:700;z-index:1001;box-shadow:0 8px 24px rgba(0,0,0,.5);}
 
   #art,#artprint{width:1080px;height:1920px;position:relative;overflow:hidden;background:#1a0f2e;color:#fff;}
   .artbg{position:absolute;inset:0;z-index:0;background:radial-gradient(120% 80% at 50% 0%,#2a1748 0%,#1a0f2e 45%,#080014 100%);}
@@ -170,7 +169,6 @@
 
 <!-- MODO PRINT: arte grande centralizada -->
 <div id="printstage">
-  <div class="closehint">👆 Dê o print da tela e recorte. Toque em Fechar para voltar.</div>
   <div class="pscaler" id="pscaler"><div id="artprint"></div></div>
   <button class="closebtn" onclick="exitPrint()">✕ Fechar modo print</button>
 </div>
@@ -391,21 +389,29 @@
   }
   function exitPrint(){ document.body.classList.remove('printmode'); }
 
+  function isIOS(){ return /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1); }
   async function baixar(){
     const {bra,adv,tm,fim}=fill();
-    // cria um nó temporário em tamanho real fora da tela
     const tmp=document.createElement('div');
     tmp.style.position='fixed'; tmp.style.left='-99999px'; tmp.style.top='0';
     tmp.innerHTML='<div id="artdl" style="width:1080px;height:1920px;position:relative;overflow:hidden;background:#1a0f2e;color:#fff;font-family:DM Sans,sans-serif;">'+artHTML()+'</div>';
     document.body.appendChild(tmp);
     try{
       const canvas=await html2canvas(tmp.querySelector('#artdl'),{width:1080,height:1920,scale:1,backgroundColor:'#1a0f2e',useCORS:true,logging:false});
-      const link=document.createElement('a');
-      link.download=(fim?'FINAL':'AOVIVO')+'_'+bra+'x'+adv+'_'+tm+'.png';
-      link.href=canvas.toDataURL('image/png');
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      const dataURL=canvas.toDataURL('image/png');
+      const fname=(fim?'FINAL':'AOVIVO')+'_'+bra+'x'+adv+'_'+tm+'.png';
+      if(isIOS()){
+        // iOS: abre a imagem numa nova aba — segure o dedo na imagem e 'Salvar na galeria'
+        const w=window.open();
+        if(w){ w.document.write('<html><head><meta name=\'viewport\' content=\'width=device-width,initial-scale=1\'><title>'+fname+'</title></head><body style=\'margin:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif\'><p style=\'color:#fff;font-size:15px;padding:14px;text-align:center\'>👇 Segure o dedo na imagem e toque em <b>Salvar na galeria</b></p><img src=\''+dataURL+'\' style=\'width:100%;max-width:420px;height:auto;display:block\'></body></html>'); w.document.close(); }
+        else { alert('Permita pop-ups para salvar a imagem, ou use o Modo print.'); }
+      } else {
+        const link=document.createElement('a');
+        link.download=fname; link.href=dataURL;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      }
     }catch(e){
-      alert('Se o download não funcionar no seu navegador, use o "Modo print" e tire um print da tela. (Erro: '+e.message+')');
+      alert('Não consegui gerar a imagem. Use o "Modo print" e tire um print. ('+e.message+')');
     }
     document.body.removeChild(tmp);
   }
