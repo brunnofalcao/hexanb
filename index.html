@@ -209,7 +209,10 @@
     const {bra,adv,last,venceu,empate,perdendo,viradaBra,levouVirada}=s;
     const fim=mode==='fim';
     const dif=bra-adv;
-    const parc=6+bra*6;
+    const parc=Math.min(6+bra*6, 42);          // teto ao vivo (base+gols), sem vitória
+    const tetoVivo = (6+bra*6) >= 42;              // bateu teto durante o jogo
+    const golsPct = Math.min(bra*6, 36);           // gols travados em 36 (6 gols)
+    const tetoFim = (6 + bra*6 + 6) >= 48;         // bateu teto no fechamento
 
     // 0 x 0
     if(bra===0&&adv===0){
@@ -239,7 +242,7 @@
           kicker=rnd(['🏁 VITÓRIA DO BRASIL!','🏁 É VITÓRIA!','🏁 DEU BRASIL!']);
           narr=rnd(['Vitória nossa.','O Brasil venceu. E você também.','Três pontos e desconto.']);
         }
-        ctx='<b>6% de largada + '+(bra*6)+'% dos gols + 6% da vitória.</b> Esse é o seu desconto de hoje.';
+        ctx = tetoFim ? '<b>Você bateu o teto: 48% de desconto!</b> O máximo por jogo. Aproveita que é raro!' : '<b>6% de largada + '+golsPct+'% dos gols + 6% da vitória.</b> Esse é o seu desconto de hoje.';
         foot=rnd(['Garanta com o cupom abaixo. Corre que vale só até amanhã! 🔥','Use o cupom agora — depois de amanhã, já era! ⏰','Cupom abaixo. Não vacila, vale só até amanhã!']);
       } else if(empate){
         kicker=rnd(['🏁 Apito final · '+bra+' a '+adv,'🏁 Ficou no empate']);
@@ -286,7 +289,7 @@
         kicker=rnd(['⚽ GOL DO BRASIL!','⚽ BRASIL DESCONTA!']);
         narr=rnd(['Brasil reage!','Tá vivo no jogo!']);
       }
-      ctx='Seu desconto subiu pra <b>'+parc+'%</b> agora. E ainda dá pra crescer. 👀';
+      ctx = tetoVivo ? 'Você já está no <b>máximo possível em campo: '+parc+'%!</b> Agora é torcer pela vitória pra cravar o cupom. 🔥' : 'Seu desconto subiu pra <b>'+parc+'%</b> agora. E ainda dá pra crescer. 👀';
       foot='A cada gol do Brasil, +6%. Se vencer, +6% no fim. 🇧🇷';
       return {kicker,narr,ctx,foot};
     } else {
