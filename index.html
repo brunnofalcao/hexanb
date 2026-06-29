@@ -209,6 +209,10 @@ function pacote(){
   const fim=mode==='fim';
   const dif=bra-adv;
   const parc=Math.min(6+bra*6,42);
+  // explica de onde vem o desconto, sem creditar gols inexistentes
+  const origem = bra===0
+    ? 'pela largada (o Brasil em campo)'
+    : (bra*6>=36 ? 'pela largada + gols do Brasil (no teto)' : 'pela largada + '+(bra*6)+'% dos gols do Brasil');
   const golsPct=Math.min(bra*6,36);
   const tetoVivo=(6+bra*6)>=42;
   const tetoFim=(6+bra*6+6)>=48;
@@ -290,7 +294,7 @@ function pacote(){
     if(levouVirada){
       if(advdif>=3){ kicker=rnd(['🔴 Ô, Seleção… acorda! 😤','🔴 Tá complicado, hein…','🔴 Cadê o Brasil aí?']); narr=rnd(['Mas o jogo não acabou.','Dá tempo de reagir!','Vai, Brasil, reage!']); }
       else { kicker=rnd(['🔴 Adversário virou…','🔴 Tomou a virada…']); narr=rnd(['Mas o jogo é longo.','Calma, ainda dá tempo!']); }
-      ctx='Mesmo assim, seus <b>'+parc+'%</b> dos gols do Brasil estão garantidos. 💪';
+      ctx='Mesmo assim, seus <b>'+parc+'%</b> já estão garantidos '+origem+'. 💪';
     } else if(empate){
       kicker=rnd(['🛡️ Empatou? Calma…','🛡️ Empate no placar…','🛡️ Igualou lá…']);
       narr=rnd(['…mas o desconto não cai.','…o seu desconto fica firme.','…aqui ninguém empata seu desconto.']);
@@ -298,7 +302,7 @@ function pacote(){
     } else if(advdif>=3){
       kicker=rnd(['🔴 Eita, Seleção! 😅','🔴 Tá difícil, hein Brasil…','🔴 Bora acordar, Seleção!']);
       narr=rnd(['Mas o desconto é seu, viu?','Calma que ainda dá!','No campo tá feio, mas você tá protegido.']);
-      ctx='O placar tá assim, mas <b>seus '+parc+'% já estão garantidos.</b> Bola pra frente! 🇧🇷';
+      ctx='O placar tá assim, mas <b>seus '+parc+'% já estão garantidos</b> '+origem+'. Bola pra frente! 🇧🇷';
     } else if(bra>adv){
       kicker=rnd(['🔴 Adversário descontou','🔴 Levou um, mas segue']);
       narr=rnd(['Brasil ainda na frente!','Tá tudo sob controle!']);
@@ -306,7 +310,7 @@ function pacote(){
     } else {
       kicker=rnd(['🔴 Gol do adversário','🔴 Tomou o gol…']);
       narr=rnd(['Bola pra frente!','Vamos pra cima!','Reage, Brasil!']);
-      ctx='Seu desconto já garantido: <b>'+parc+'%</b> pelos gols do Brasil.';
+      ctx='Seu desconto já garantido: <b>'+parc+'%</b> '+origem+'.';
     }
     foot='Seu desconto não cai com gol do adversário. Só sobe com o do Brasil! 🇧🇷';
     return {kicker,narr,ctx,foot};
